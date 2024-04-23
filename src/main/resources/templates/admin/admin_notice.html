@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>회사홈페이지</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/common.css" />
+  <!-- main.jsp, login.jsp, ... -->
+  <link rel="stylesheet" href="/css/admin/admin.css" />
+
+
+  <!-- Bootstrap CSS -->
+  <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+          integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn"
+          crossorigin="anonymous"
+  />
+  <!-- Bootstarp JS -->
+  <script
+          src="https://code.jquery.com/jquery-3.6.0.min.js"
+          integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+          crossorigin="anonymous"
+  ></script>
+  <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+          crossorigin="anonymous"
+  ></script>
+</head>
+
+<body>
+<!-- 헤더 -->
+<div th:replace="/fragments/headerTop.html :: fragment-headerTop"></div>
+<div th:replace="/fragments/header.html :: fragment-header" class="sticky-top"></div>
+
+<!-- 메인 -->
+<!-- COMMON -->
+
+<div class="commonSection1">
+  <div class="commonContent1">
+    <img
+            src="/img/member/sub-visual01.jpg"
+            style="width: 100%; height: 100%"
+    />
+    <div class="commonContent2 text-center">
+      <div>
+        <h3>관리자페이지</h3>
+      </div>
+      <div>
+        <p><img src="/img/icon-home.png" /> > 관리자페이지</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="adminMain">
+  <!-- 사이드메뉴 -->
+  <div id="adminSide">
+    <ul>
+      <li><a href="/admin/admin_member">회원 관리</a></li>
+      <li>
+        <a href="/admin/admin_notice" class="adminSideActive">공지사항 관리</a>
+      </li>
+
+    </ul>
+  </div>
+  <!-- 메인 -->
+  <div id="adminSection">
+    <div class="adminDiv">
+      <h3>공지사항 관리</h3>
+    </div>
+    <div class="adminDiv">
+      검색 옵션
+      <select name="search_select" id="search_select">
+        <option value="all" selected>전체</option>
+        <option value="title">제목</option>
+        <option value="content">내용</option>
+        <option value="id">작성자아이디</option>
+      </select>
+      <input
+              type="text"
+              name="search_keyword"
+              id="search_keyword"
+              value=""
+      />
+      <button onclick="searchNotice()">검색</button>
+    </div>
+    <div class="adminDiv">
+      정렬
+      <select class="size" name="order_select" id="order_select" onchange="sortNotice()">
+        <option value="id_asc" selected>아이디 오름차순</option>
+        <option value="id_desc">아이디 내림차순</option>
+        <option value="reg_date_asc">등록일 오름차순</option>
+        <option value="reg_date_desc">등록일 내림차순</option>
+      </select>
+    </div>
+    <div class="adminDiv2" id="tableTitle">
+      <span>
+        <span>목록</span>
+        <span th:text="${count}"></span>
+        <span>건</span>
+      </span>
+      <div>
+        한페이지 행수
+        <select class="size" name="page_select" id="page_select" onchange="displayNotice()">
+          <option value="pageAll" selected>전체 보기</option>
+          <option value="page5">5개만 보기</option>
+          <option value="page10">10개만 보기</option>
+        </select>
+      </div>
+    </div>
+    <div class="">
+      <table class="adminTable">
+        <thead>
+        <tr>
+          <th>글번호</th>
+          <th>제목</th>
+          <th>글쓴이</th>
+          <th>작성일</th>
+        </tr>
+        </thead>
+        <tbody id="noticeTableBody">
+          <tr th:each="dto, status: ${list}">
+            <td>
+              <a th:href="|/admin/admin_notice_view?notice_idx=${dto.getNoticeIdx()}|"
+                 th:text="${status.count}"></a>
+            </td>
+            <td>
+              <a th:href="|/admin/admin_notice_view?notice_idx=${dto.getNoticeIdx()}|"
+                 th:text="${dto.noticeTitle}"></a>
+            </td>
+            <td>
+              <a th:href="|/admin/admin_notice_view?notice_idx=${dto.getNoticeIdx()}|">admin</a>
+            </td>
+            <td>
+              <a th:href="|/admin/admin_notice_view?notice_idx=${dto.getNoticeIdx()}|"
+                 th:text="${dto.noticeDate}"></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pageNav adminDiv2">
+
+      <div><a href="/admin/admin_notice_write">공지글 쓰기</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- 푸터 -->
+<div th:replace="/fragments/footer.html :: fragment-footer"></div>
+
+<script>
+  // back to top 기능
+  $(document).ready(function () {
+    $(window).scroll(function () {
+      if ($(this).scrollTop() > 50) {
+        $("#back-to-top").fadeIn();
+      } else {
+        $("#back-to-top").fadeOut();
+      }
+    });
+    // scroll body to 0px on click
+    $("#back-to-top").click(function () {
+      $("#back-to-top").tooltip("hide");
+      $("body,html").animate(
+              {
+                scrollTop: 0,
+              },
+              500
+      );
+      return false;
+    });
+    $("#back-to-top").tooltip("show");
+  });
+</script>
+<script>
+  function searchNotice() {
+    const option = document.getElementById("search_select").value;
+    const keyword = document.getElementById("search_keyword").value;
+
+    fetch(`/admin/searchNotice?option=${option}&keyword=${keyword}`, {
+      method:"GET"
+    })
+            .then((response) => {
+              return response.json();
+            })
+            .then((json) => {
+              showData(json);
+            })
+  }
+
+  function sortNotice() {
+    const option = document.getElementById("order_select").value;
+
+    fetch("/admin/sortNotice?option=" + option)
+            .then((response) => {
+              return response.json();
+            })
+            .then((json) => {
+              showData(json);
+            })
+  }
+
+  function displayNotice() {
+    const pageSize = document.getElementById("page_select").value;
+    const orderOption = document.getElementById("order_select").value;
+
+    fetch(`/admin/getNotice?pageSize=${pageSize}&orderOption=${orderOption}`)
+            .then((response) => {
+              return response.json();
+            })
+            .then((json) => {
+              showData(json);
+            })
+  }
+
+  function showData(data) {
+    const tableBody = document.getElementById('noticeTableBody');
+    tableBody.innerHTML = '';
+    let index = 1;
+    data.forEach(notice => {
+      const row = tableBody.insertRow();
+      const link1 = document.createElement('a');
+      link1.href = `/admin/admin_notice_view?notice_idx=${notice.noticeIdx}`;
+      link1.textContent = index++;
+      const cell1 = row.insertCell();
+      cell1.appendChild(link1);
+
+      const link2 = document.createElement('a');
+      link2.href = `/admin/admin_notice_view?notice_idx=${notice.noticeIdx}`;
+      link2.textContent = notice.noticeTitle;
+      const cell2 = row.insertCell();
+      cell2.appendChild(link2);
+
+      const link3 = document.createElement('a');
+      link3.href = `/admin/admin_notice_view?notice_idx=${notice.noticeIdx}`;
+      link3.textContent = notice.noticeMemberId;
+      const cell3 = row.insertCell();
+      cell3.appendChild(link3);
+
+      const link4 = document.createElement('a');
+      link4.href = `/admin/admin_notice_view?notice_idx=${notice.noticeIdx}`;
+      link4.textContent = notice.noticeDate;
+      const cell4 = row.insertCell();
+      cell4.appendChild(link4);
+    });
+  }
+
+
+</script>
+</body>
+</html>

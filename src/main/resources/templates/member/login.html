@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인</title>
+
+  <!-- Main CSS : Header, Main, Footer -->
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/member/login.css">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+  <!-- Bootstarp JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+
+  <script>
+    $(document).ready(function(){
+      $('#headerTop').load("../headerTop-sub.html");
+      $('#header').load("../header-sub.html");
+      $('#footer').load("../footer-sub.html");
+    });
+  </script>
+
+</head>
+<body>
+<script>
+  // error 파라미터가 1로 전달된 경우에만 alert 창을 띄우고 페이지를 리다이렉트
+  const urlParams = new URLSearchParams(window.location.search);
+  const error = urlParams.get('error');
+  if (error === '1') {
+    alert('로그인이 필요합니다.');
+    window.location.href = '/member/login'; // 로그인 페이지로 리다이렉트
+  }
+</script>
+<!-- 헤더 -->
+<!-- <div id="headerTop"></div> -->
+<div th:replace="/fragments/headerTop.html :: fragment-headerTop"></div>
+<!-- <div id="header" class="sticky-top"></div> -->
+<div th:replace="/fragments/header.html :: fragment-header"></div>
+
+<!-- 메인 -->
+<!-- COMMON -->
+<div class="commonSection1">
+  <div class="commonContent1">
+    <img src="../img/member/sub-visual01.jpg"
+         style="width: 100%; height: 100%;">
+    <div class="commonContent2 text-center">
+      <div>
+        <h3>MEMBER</h3>
+      </div>
+      <div>
+        <p><img src="../img/icon-home.png"> > 로그인</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 로그인 -->
+<div class="loginForm container text-center">
+  <div class="loginSection1">
+    <div><h3>로그인</h3></div>
+    <div><p>The design and maintenance are excellent.</p></div>
+  </div>
+  <div class="loginMain">
+    <table class="main1">
+      <tr>
+        <td>
+          아이디 <br>
+          비밀번호
+        </td>
+        <td>
+          <input type="text" name="loginID" id="loginID"> <br>
+          <input type="password" name="loginPW" id="loginPW">
+        </td>
+        <td>
+          <input class="loginImg" type="image" src="../img/member/btn_login.gif" onclick="login();">
+        </td>
+      </tr>
+    </table>
+    <div class="loginSection2">
+      <table class="main2">
+        <tr>
+          <td>-아이디를 잊으셨나요?</td>
+          <td>
+            <input type="image"
+                   onclick="location.href='/member/idFind';",
+                   src="../img/member/btn_id_find.gif" >
+          </td>
+        </tr>
+        <tr>
+          <td>-비밀번호를 잊으셨나요?</td>
+          <td>
+            <input type="image"
+                   onclick="location.href='/member/passwordFind';",
+                   src="../img/member/btn_pw_find.gif" >
+          </td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- 푸터 -->
+<!--  <div id="footer"></div>-->
+<div th:replace="/fragments/footer.html :: fragment-footer"></div>
+
+<script>
+  function login() {
+    console.log("로그인 요청");
+    const memberId = document.getElementById("loginID").value;
+    const memberPw = document.getElementById("loginPW").value;
+
+    if(!memberId){
+      alert("아이디를 입력해주세요");
+      return false;
+    } else if(!memberPw){
+      alert("비밀번호를 입력해주세요");
+      return false;
+    }
+
+    fetch("/member/loginAction", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        memberId : memberId,
+        memberPw : memberPw
+      })
+    })
+            .then((response) => {
+              return response.json();
+            })
+            .then((json) => {
+              console.log(json);
+              alert(json.message)
+              if(json.status === "ok"){
+                window.location.href = "/"
+              } else{
+                return false;
+              }
+            })
+  }
+</script>
+</body>
+</html>

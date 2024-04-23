@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>회사홈페이지</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="/css/main.css">
+	<link rel="stylesheet" href="/css/common.css">
+	<link rel="stylesheet" href="/css/admin/admin.css">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+	<!-- Bootstarp JS -->
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+<!-- 헤더 -->
+<div th:replace="/fragments/headerTop.html :: fragment-headerTop"></div>
+<div th:replace="/fragments/header.html :: fragment-header" class="sticky-top"></div>
+
+
+<!-- 메인 -->
+<!-- COMMON -->
+
+<div class="commonSection1">
+	<div class="commonContent1">
+		<img src="/img/member/sub-visual01.jpg"
+			 style="width: 100%; height: 100%;">
+		<div class="commonContent2 text-center">
+			<div>
+				<h3>관리자페이지</h3>
+			</div>
+			<div>
+				<p><img src="/img/icon-home.png"> > 관리자페이지</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="adminMain">
+	<!-- 사이드메뉴 -->
+	<div id="adminSide">
+		<ul>
+			<li><a href="/admin/admin_member" class="adminSideActive">회원 관리</a></li>
+			<li><a href="/admin/admin_notice">공지사항 관리</a></li>
+		</ul>
+	</div>
+	<!-- 메인 -->
+	<div id="adminSection">
+		<div class="adminDiv">
+			<h3>회원관리</h3>
+		</div>
+		<div class="adminDiv">
+			검색 옵션
+			<select name="search_select" id="search_select">
+				<option value="all" selected>전체</option>
+				<option value="id">아이디</option>
+				<option value="name">성명</option>
+				<option value="email">이메일</option>
+			</select>
+			<input type="text" name="search_keyword" id="search_keyword" value="">
+			<button onclick="searchMembers()">검색</button>
+		</div>
+		<div class="adminDiv">
+			정렬
+			<select class="size" name="order_select" id="order_select" onchange="sortMembers()">
+				<option value="id_asc" selected>아이디 오름차순</option>
+				<option value="id_desc">아이디 내림차순</option>
+				<option value="join_date_asc">가입일 오름차순</option>
+				<option value="join_date_desc">가입일 내림차순</option>
+			</select>
+		</div>
+		<div class="adminDiv2" id="tableTitle">
+			<span>
+				<span>회원목록</span>
+				<span th:text="${count}"></span>
+				<span>건</span>
+			</span>
+			<div>한페이지 행수
+				<select class="size" name="page_select" id="page_select" onchange="displayMembers()">
+					<option value="pageAll" selected>전체 보기</option>
+					<option value="page5">5개만 보기</option>
+					<option value="page10">10개만 보기</option>
+				</select>
+			</div>
+		</div>
+		<div class="">
+			<table class="adminTable">
+				<thead>
+				<tr>
+					<th>아이디</th>
+					<th>성명</th>
+					<th>이메일</th>
+					<th>생일</th>
+					<th>가입일</th>
+				</tr>
+				</thead>
+				<tbody id="memberTableBody">
+				<tr th:each="dto, status: ${list}">
+					<td th:text="${dto.memberId}"></td>
+					<td th:text="${dto.memberName}"></td>
+					<td th:text="${dto.memberEmail}"></td>
+					<td th:text="${dto.memberBirthDate}"></td>
+					<td th:text="${dto.memberJoinDate}"></td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+
+<!-- 푸터 -->
+<div th:replace="/fragments/footer.html :: fragment-footer"></div>
+
+
+
+<script>
+	// back to top 기능
+	$(document).ready(function(){
+		$(window).scroll(function () {
+			if ($(this).scrollTop() > 50) {
+				$('#back-to-top').fadeIn();
+			} else {
+				$('#back-to-top').fadeOut();
+			}
+		});
+		// scroll body to 0px on click
+		$('#back-to-top').click(function () {
+			$('#back-to-top').tooltip('hide');
+			$('body,html').animate({
+				scrollTop: 0
+			}, 500);
+			return false;
+		});
+		$('#back-to-top').tooltip('show');
+	});
+
+</script>
+<script>
+	function searchMembers() {
+		const option = document.getElementById("search_select").value;
+		const keyword = document.getElementById("search_keyword").value;
+
+		fetch(`/admin/searchMembers?option=${option}&keyword=${keyword}`, {
+			method:"GET"
+		})
+				.then((response) => {
+					return response.json();
+				})
+				.then((json) => {
+					showData(json);
+				})
+	}
+
+	function sortMembers() {
+		const option = document.getElementById("order_select").value;
+
+		fetch("/admin/sortMembers?option=" + option)
+				.then((response) => {
+					return response.json();
+				})
+				.then((json) => {
+					showData(json);
+				})
+	}
+
+	function displayMembers() {
+		const pageSize = document.getElementById("page_select").value;
+		const orderOption = document.getElementById("order_select").value;
+
+		fetch(`/admin/getMembers?pageSize=${pageSize}&orderOption=${orderOption}`)
+				.then((response) => {
+					return response.json();
+				})
+				.then((json) => {
+					showData(json);
+				})
+	}
+
+	function showData(data) {
+		const tableBody = document.getElementById('memberTableBody');
+		tableBody.innerHTML = '';
+
+		data.forEach(member => {
+			const row = tableBody.insertRow();
+			row.insertCell().textContent = member.memberId;
+			row.insertCell().textContent = member.memberName;
+			row.insertCell().textContent = member.memberEmail;
+			row.insertCell().textContent = member.memberBirthDate;
+			row.insertCell().textContent = member.memberJoinDate;
+		});
+	}
+
+</script>
+
+</body>
+</html>

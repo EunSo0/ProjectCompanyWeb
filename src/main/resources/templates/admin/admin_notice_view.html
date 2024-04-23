@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>회사홈페이지</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/common.css" />
+  <!-- main.jsp, login.jsp, ... -->
+  <link rel="stylesheet" href="/css/admin/admin.css" />
+
+  <!-- Bootstrap CSS -->
+  <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+          integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn"
+          crossorigin="anonymous"
+  />
+  <!-- Bootstarp JS -->
+  <script
+          src="https://code.jquery.com/jquery-3.6.0.min.js"
+          integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+          crossorigin="anonymous"
+  ></script>
+  <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+          crossorigin="anonymous"
+  ></script>
+</head>
+
+<body>
+<!-- 헤더 -->
+<div th:replace="/fragments/headerTop.html :: fragment-headerTop"></div>
+<div th:replace="/fragments/header.html :: fragment-header" class="sticky-top"></div>
+
+
+<!-- 메인 -->
+<!-- COMMON -->
+
+<div class="commonSection1">
+  <div class="commonContent1">
+    <img
+            src="/img/member/sub-visual01.jpg"
+            style="width: 100%; height: 100%"
+    />
+    <div class="commonContent2 text-center">
+      <div>
+        <h3>관리자페이지</h3>
+      </div>
+      <div>
+        <p><img src="/img/icon-home.png" /> > 관리자페이지</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="adminMain">
+  <!-- 사이드메뉴 -->
+  <div id="adminSide">
+    <ul>
+      <li><a href="/admin/admin_member">회원 관리</a></li>
+      <li>
+        <a href="/admin/admin_notice" class="adminSideActive">공지사항 관리</a>
+      </li>
+    </ul>
+  </div>
+  <!-- 메인 -->
+  <div id="adminSection">
+    <div class="adminDiv">
+      <h3>공지사항 관리</h3>
+    </div>
+    <input type="hidden" id="memberId" th:value="${ session.memberId }">
+    <div class="noticeViewTitle adminDiv2">
+      <span th:text="${ dto.noticeTitle }" id="noticeTitle"></span>
+      <span>
+        <span>글쓴이: </span><span th:text="${ dto.noticeMemberId }"></span>
+        <span>글번호: </span><span th:text="${dto.noticeIdx}">5</span>
+      </span>
+    </div>
+    <div class="adminDiv2">
+      <div class="noticeViewContent">
+            <textarea rows="5" cols="50" id="noticeContent" th:text="${dto.noticeContent}"></textarea>
+      </div>
+    </div>
+    <div class="noticeViewBtns adminDiv2">
+      <div>
+        <button onclick="update()">수정</button>
+        <button>삭제</button>
+      </div>
+      <div>
+        <a href="/admin/admin_notice">목록</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.ckeditor.com/4.15.1/standard/ckeditor.js"></script>
+<!-- <script>CKEDITOR.replace('editor4');</script> -->
+<script>
+  function update(){
+    const noticeTitle = document.getElementById("noticeTitle").innerText;
+    const noticeContent = document.getElementById("noticeContent").value;
+    const noticeMemberId = document.getElementById("memberId").value;
+    const notice_idx = new URLSearchParams(window.location.search).get('notice_idx');
+
+
+    fetch(`/admin/admin_notice_modify?notice_idx=${notice_idx}`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        noticeTitle : noticeTitle,
+        noticeContent : noticeContent,
+        noticeMemberId : noticeMemberId
+      })
+    })
+            .then((response) => {
+              return response.json();
+            })
+            .then((json) => {
+              console.log(json);
+
+              if(json.status === "ok"){
+                alert("글을 수정했습니다.")
+                window.location.href = `/admin/admin_notice_view?notice_idx=${json.message}`
+              } else{
+                alert(json.message);
+              }
+            })
+  }
+</script>
+
+<!-- 푸터 -->
+<div th:replace="/fragments/footer.html :: fragment-footer"></div>
+
+<script>
+  // back to top 기능
+  $(document).ready(function () {
+    $(window).scroll(function () {
+      if ($(this).scrollTop() > 50) {
+        $("#back-to-top").fadeIn();
+      } else {
+        $("#back-to-top").fadeOut();
+      }
+    });
+    // scroll body to 0px on click
+    $("#back-to-top").click(function () {
+      $("#back-to-top").tooltip("hide");
+      $("body,html").animate(
+              {
+                scrollTop: 0,
+              },
+              500
+      );
+      return false;
+    });
+    $("#back-to-top").tooltip("show");
+  });
+</script>
+</body>
+</html>
